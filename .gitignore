@@ -39,4 +39,9 @@ Thumbs.db
 
 # Other #
 #####################
-.vs
+**.vs/
+obj/
+[Dd]ebug*/
+[Rr]elease*/
+[Bb]in/
+**.tmp

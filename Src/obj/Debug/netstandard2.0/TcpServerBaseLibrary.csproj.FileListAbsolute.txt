@@ -1,8 +1,0 @@
-C:\Users\knubb\OneDrive\Egna projekt\C#\Projects\Networking\ServerBaseLibrary\TcpServerBaseLibrary\Src\bin\Debug\netstandard2.0\TcpServerBaseLibrary.deps.json
-C:\Users\knubb\OneDrive\Egna projekt\C#\Projects\Networking\ServerBaseLibrary\TcpServerBaseLibrary\Src\bin\Debug\netstandard2.0\TcpServerBaseLibrary.dll
-C:\Users\knubb\OneDrive\Egna projekt\C#\Projects\Networking\ServerBaseLibrary\TcpServerBaseLibrary\Src\bin\Debug\netstandard2.0\TcpServerBaseLibrary.pdb
-C:\Users\knubb\OneDrive\Egna projekt\C#\Projects\Networking\ServerBaseLibrary\TcpServerBaseLibrary\Src\obj\Debug\netstandard2.0\TcpServerBaseLibrary.csproj.CoreCompileInputs.cache
-C:\Users\knubb\OneDrive\Egna projekt\C#\Projects\Networking\ServerBaseLibrary\TcpServerBaseLibrary\Src\obj\Debug\netstandard2.0\TcpServerBaseLibrary.AssemblyInfoInputs.cache
-C:\Users\knubb\OneDrive\Egna projekt\C#\Projects\Networking\ServerBaseLibrary\TcpServerBaseLibrary\Src\obj\Debug\netstandard2.0\TcpServerBaseLibrary.AssemblyInfo.cs
-C:\Users\knubb\OneDrive\Egna projekt\C#\Projects\Networking\ServerBaseLibrary\TcpServerBaseLibrary\Src\obj\Debug\netstandard2.0\TcpServerBaseLibrary.dll
-C:\Users\knubb\OneDrive\Egna projekt\C#\Projects\Networking\ServerBaseLibrary\TcpServerBaseLibrary\Src\obj\Debug\netstandard2.0\TcpServerBaseLibrary.pdb
