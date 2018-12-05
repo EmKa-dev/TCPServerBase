@@ -27,7 +27,6 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
 
         public WorkingTCPConnection_Threaded(Socket client, ILogger logger)
         {
-            logger.LogMessage("New working tcp connection created");
             WorkSocket = client;
             _Logger = logger;
 
@@ -41,7 +40,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
             await Task.Run(() =>
             {
 
-                _Logger.LogMessage($"New connection \"StartListenOnNewThread\" after Task.Run is running thread id : {Thread.CurrentThread.ManagedThreadId}");
+                _Logger.Debug($"New connection \"StartListenOnNewThread\" after Task.Run is running thread id : {Thread.CurrentThread.ManagedThreadId}");
 
 
                 while (true)
@@ -49,7 +48,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
 
                     if (_ConnectionState == TCPConnectionState.ReceivingHeader)
                     {
-                        _Logger.LogMessage("Preparing to read header data async");
+                        _Logger.Debug("Preparing to read header data async");
 
                         _ConnectionState = TCPConnectionState.ReceiveOperationStarted;
 
@@ -75,13 +74,13 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
         public async Task StartListenWithBlockingCalls()
         {
 
-            _Logger.LogMessage($"New connection \"StartListenBlocking\" before Task.Run is running thread id : {Thread.CurrentThread.ManagedThreadId}");
+            _Logger.Debug($"New connection \"StartListenBlocking\" before Task.Run is running thread id : {Thread.CurrentThread.ManagedThreadId}");
 
 
             await Task.Run(() =>
             {
 
-                _Logger.LogMessage($"New connection \"StartListenBlocking\" after Task.Run is running thread id : {Thread.CurrentThread.ManagedThreadId}");
+                _Logger.Debug($"New connection \"StartListenBlocking\" after Task.Run is running thread id : {Thread.CurrentThread.ManagedThreadId}");
 
 
                 while (true)
@@ -89,7 +88,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
 
                     if (_ConnectionState == TCPConnectionState.ReceivingHeader)
                     {
-                        _Logger.LogMessage("Preparing to read header data async");
+                        _Logger.Debug("Preparing to read header data async");
 
                         ReceiveSync();
 
@@ -107,14 +106,14 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
         private void ReceiveSync()
         {
 
-            _Logger.LogMessage($"ReceiveSync is running thread id : {Thread.CurrentThread.ManagedThreadId}");
+            _Logger.Debug($"ReceiveSync is running thread id : {Thread.CurrentThread.ManagedThreadId}");
 
 
             try
             {
                 int received = this.WorkSocket.Receive(_ProtocolPrefixBuffer, 0, _ProtocolPrefixBuffer.Length - _BytesRead, SocketFlags.None);
 
-                _Logger.LogMessage($"received {received} bytes");
+                _Logger.Debug($"received {received} bytes");
 
                 //Append to field to keep track of bytes received between read attempts
                 _BytesRead += received;
@@ -140,7 +139,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
                 else if (_BytesRead < 8)
                 {
                     //We havn't gotten the whole header, wait for more data to come in
-                    _Logger.LogMessage("Waiting for rest of header data");
+                    _Logger.Debug("Waiting for rest of header data");
 
                 }
             }
@@ -156,7 +155,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
         protected void OnBytesReceived(IAsyncResult result)
         {
 
-            _Logger.LogMessage($"OnBytesReceived is running thread id : {Thread.CurrentThread.ManagedThreadId}");
+            _Logger.Debug($"OnBytesReceived is running thread id : {Thread.CurrentThread.ManagedThreadId}");
 
 
             try
@@ -166,7 +165,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
                 // the number of bytes read.
                 int received = this.WorkSocket.EndReceive(result);
 
-                _Logger.LogMessage($"received {received} bytes");
+                _Logger.Debug($"received {received} bytes");
 
                 //Append to filed to keep track of bytes received between read attempts
                 _BytesRead += received;
@@ -192,7 +191,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
                 else if (_BytesRead < 8)
                 {
                     //We havn't gotten the whole header, wait for more data to come in
-                    _Logger.LogMessage("Waiting for rest of header data");
+                    _Logger.Debug("Waiting for rest of header data");
 
                 }
             }
@@ -205,7 +204,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
 
         private void SendAcknowledgment(ApplicationProtocolHeader head)
         {
-            _Logger.LogMessage("Sending acknowledgment");
+            _Logger.Debug("Sending acknowledgment");
 
             WorkSocket.Send(head.WrapHeaderData()); 
         }
@@ -223,7 +222,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
             ApplicationProtocolHeader header = new ApplicationProtocolHeader(_ProtocolPrefixBuffer);
 
 
-            _Logger.LogMessage($"Header received, expecting Messagetype" +
+            _Logger.Info($"Header received, expecting Messagetype" +
                 $" : {header.MessageTypeIdentifier.ToString()}, with lenght {header.Lenght}");
 
             //Reset bytes read, as we will now start to receive the rest of the data
@@ -278,7 +277,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
 
         private void NotifyConnectionClosed()
         {
-            _Logger.LogMessage("Connection was shut down");
+            _Logger.Info("Connection was shut down");
             ConnectionClosedEvent?.Invoke(this);
         }
 

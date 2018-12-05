@@ -28,7 +28,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
 
             tcplistener = new TcpListener(IPAddress.Loopback, listeningport);
 
-            Logger.LogMessage("Server started!");
+            Logger.Info("Server started!");
 
         }
 
@@ -52,7 +52,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
 
                 if (_serverState != TCPServerState.ConnectionThresholdReached && _serverState != TCPServerState.AcceptConnectionRequestOperationStarted)
                 {
-                    Logger.LogMessage($"Starts listening for connection request number: {TCPConnections.Count + 1}");
+                    Logger.Debug($"Starts listening for connection request number: {TCPConnections.Count + 1}");
 
 
 
@@ -67,7 +67,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
                 {
 
                     threads = System.Diagnostics.Process.GetCurrentProcess().Threads.Count;
-                    Logger.LogMessage($"Main loop is running thread id : {Thread.CurrentThread.ManagedThreadId}");
+                    Logger.Debug($"Main loop is running thread id : {Thread.CurrentThread.ManagedThreadId}");
                 }
             }
         }
@@ -80,13 +80,13 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
         private async void OnConnectRequest(IAsyncResult result)
         {
 
-            Logger.LogMessage($"OnConnectRequest is running thread id : {Thread.CurrentThread.ManagedThreadId}");
+            Logger.Debug($"OnConnectRequest is running thread id : {Thread.CurrentThread.ManagedThreadId}");
 
             TcpListener sock = (TcpListener)result.AsyncState;
 
             WorkingTCPConnection_Threaded newConn = new WorkingTCPConnection_Threaded(sock.Server.EndAccept(result), Logger);
 
-            Logger.LogMessage($"Connection made with {newConn.WorkSocket.RemoteEndPoint.ToString()}");
+            Logger.Info($"Connection made with {newConn.WorkSocket.RemoteEndPoint.ToString()}");
 
             TCPConnections.Add(newConn);
 
@@ -96,7 +96,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
             {
                 _serverState = TCPServerState.ConnectionThresholdReached;
 
-                Logger.LogMessage("Max allowed connections has been reached");
+                Logger.Info("Max allowed connections has been reached");
             }
             else
             {
@@ -119,7 +119,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
 
                 TCPConnections.Remove(connection);
 
-                Logger.LogMessage($"Connection closed and removed");
+                Logger.Info($"Connection closed and removed");
             }
 
             if (TCPConnections.Count < MaxConnectionsAllowed)

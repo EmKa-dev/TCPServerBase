@@ -54,7 +54,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
         public void Start()
         {
 
-            _Logger.LogMessage("Server started!");
+            _Logger.Info("Server started!");
 
             
             //TODO: Make mthod for seraching for IP
@@ -68,7 +68,6 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             while (true)
             {
                 
-
                 if (_serverState != TCPServerState.ConnectionThresholdReached)
                 {
                     if (tcplistener.Pending())
@@ -105,7 +104,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
             WorkingTCPConnection_Sync newconn = new WorkingTCPConnection_Sync(newconnection.Client, _Logger);
 
-            _Logger.LogMessage($"Connection made with {newconn.WorkSocket.RemoteEndPoint.ToString()}");
+            _Logger.Info($"Connection made with {newconn.WorkSocket.RemoteEndPoint.ToString()}");
 
             TCPConnections.Add(newconn);
 
@@ -119,7 +118,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             {
                 _serverState = TCPServerState.ConnectionThresholdReached;
 
-                _Logger.LogMessage("Connection threshold reached");
+                _Logger.Debug("Connection threshold reached");
 
                 return;
             }

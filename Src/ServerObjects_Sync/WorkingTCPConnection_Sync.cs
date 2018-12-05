@@ -18,7 +18,6 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
         public WorkingTCPConnection_Sync(Socket client, ILogger logger)
         {
-            logger.LogMessage("New tcp connection created");
             WorkSocket = client;
             _Logger = logger;
         }
@@ -83,7 +82,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                 // the number of bytes read.
                 int received = this.WorkSocket.Receive(_ProtocolPrefixBuffer, _BytesRead, _ProtocolPrefixBuffer.Length - _BytesRead, SocketFlags.None);
 
-                _Logger.LogMessage($"Read {received} bytes header data");
+                _Logger.Debug($"Read {received} bytes header data");
 
                 //Append to field to keep track of bytes received between read attempts
                 _BytesRead += received;
@@ -91,9 +90,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                 // If no bytes were received, the connection is closed
                 if (received <= 0)
                 {
-                    this.WorkSocket.Close();
-
-                    NotifyConnectionClosed();
+                    CloseConnectionGracefully();
 
                     return;
                 }
@@ -112,15 +109,14 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                 else if (_BytesRead < 8)
                 {
                     //We havn't gotten the whole header, wait for more data to come in
-                    _Logger.LogMessage("Waiting for rest of header data");
+                    _Logger.Debug("Waiting for rest of header data");
                 }
             }
             catch (Exception e)
             {
 
-                _Logger.LogMessage(e.Message);
-
-                _Logger.LogMessage("Error receiving header data");
+                _Logger.Debug("Error receiving header data");
+                _Logger.Error(e.Message);
 
                 CloseConnectionGracefully();
 
@@ -138,7 +134,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             //Set buffer to appropriate size
             PrepareBuffer(header.Lenght);
 
-            _Logger.LogMessage("Starts reading message data");
+            _Logger.Debug("Starts reading message data");
 
             try
             {
@@ -158,9 +154,8 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             }
             catch (Exception e)
             {
-                _Logger.LogMessage(e.Message);
-
-                _Logger.LogMessage("Error receiving message data");
+                _Logger.Debug("Error receiving message data");
+                _Logger.Error(e.Message);
 
                 CloseConnectionGracefully();
             }
@@ -179,7 +174,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
         private void SendAcknowledgment(ApplicationProtocolHeader head)
         {
-            _Logger.LogMessage("Sending header acknowledgment");
+            _Logger.Debug("Sending header acknowledgment");
 
             try
             {
@@ -199,7 +194,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
         private void CloseConnectionGracefully()
         {
-            _Logger.LogMessage($"Connection with : {WorkSocket.RemoteEndPoint.ToString()} closing gracefully");
+            _Logger.Info($"Connection with : {WorkSocket.RemoteEndPoint.ToString()} closing gracefully");
 
             this.WorkSocket.Shutdown(SocketShutdown.Both);
             this.WorkSocket.Close();
@@ -217,7 +212,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
         private void NotifyCompleteDataReceived(MessageObject Data)
         {
-            _Logger.LogMessage("Complete message received");
+            _Logger.Debug("Complete message received");
 
             this.CompleteDataReceived?.Invoke(Data);
 
@@ -225,6 +220,8 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
         private void NotifyConnectionClosed()
         {
+            _Logger.Info("Connection closed");
+
             ConnectionClosedEvent?.Invoke(this);
         }
     }
