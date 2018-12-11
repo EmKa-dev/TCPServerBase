@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using TcpServerBaseLibrary.Interfaces;
@@ -13,11 +14,9 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
         private TcpListener tcplistener;
 
-        private TCPServerState _serverState = TCPServerState.Default;
+        private TCPServerState _serverState = TCPServerState.Listening;
 
         private List<IWorkingTCPConnection> TCPConnections = new List<IWorkingTCPConnection>();
-        private List<IWorkingTCPConnection> ClosedConnections = new List<IWorkingTCPConnection>();
-
 
         //Dependency objects
         private ILogger _Logger;
@@ -67,9 +66,10 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             //Main loop to keep the server going
             while (true)
             {
-                
+
                 if (_serverState != TCPServerState.ConnectionThresholdReached)
                 {
+
                     if (tcplistener.Pending())
                     {
 
@@ -79,11 +79,15 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                     }
                 }
 
-                if (ClosedConnections.Count > 0)
+
+
+                //Check for closed down connections before using it
+                if (TCPConnections.Any(x => x.IsDisposed == true))
                 {
-                    //Remove any closed connections from TCPConnections
-                    RemoveClosedConnections();
+                    //Remove any closed connections from TCPConnections              
+                    RemoveClosedConnections(TCPConnections.Where(x => x.IsDisposed == true).ToList());
                 }
+                
 
                 //Loops through available connections and let them run their methods according to their state
                 foreach (var connection in TCPConnections)
@@ -111,47 +115,53 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             //_Logger.LogMessage($"Connection count : {TCPConnections.Count}");
 
             //Register eventhandlers
-            newconn.ConnectionClosedEvent += this.OnConnectionClosed;
             newconn.CompleteDataReceived += OnCompleteDataReceived;
+
 
             if (TCPConnections.Count >= _MaxConnectionsAllowed)
             {
                 _serverState = TCPServerState.ConnectionThresholdReached;
 
                 _Logger.Debug("Connection threshold reached");
+                _Logger.Debug("Stopping listener");
 
+                tcplistener.Stop();
                 return;
             }
         }
 
 
-        private void RemoveClosedConnections()
+        private void RemoveClosedConnections(List<IWorkingTCPConnection> list)
         {
-            foreach (var item in ClosedConnections)
+
+            foreach (var item in list)
             {
+
                 TCPConnections.Remove(item);
+                _Logger.Debug("Connection removed from list");
             }
+
 
             if (TCPConnections.Count < _MaxConnectionsAllowed)
             {
                 //Reset server state to default
-                _serverState = TCPServerState.Default;
+
+                if (_serverState == TCPServerState.Listening)
+                {
+                    return;
+                }
+
+
+                _serverState = TCPServerState.Listening;
+
+                _Logger.Debug("Starting listener again");
+                tcplistener.Start();
             }
         }
 
         private void OnCompleteDataReceived(MessageObject obj)
         {
             _Parsers[obj.MessageHeader.MessageTypeIdentifier].HandleMessage(obj);
-        }
-
-        private void OnConnectionClosed(IWorkingTCPConnection connection)
-        {
-            if (TCPConnections.Contains(connection))
-            {
-                connection.ConnectionClosedEvent -= this.OnConnectionClosed;
-
-                ClosedConnections.Add(connection);
-            }
         }
     }
 }

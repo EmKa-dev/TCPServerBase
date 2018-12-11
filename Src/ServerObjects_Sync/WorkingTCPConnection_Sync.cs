@@ -12,15 +12,32 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
         //Dependency objects
         private ILogger _Logger;
 
-        private TCPConnectionState _ConnectionState = TCPConnectionState.ReceivingHeader;
+        internal TCPConnectionState _ConnectionState { get; private set; }
 
-        public Socket WorkSocket { get; set; }
+        public Socket WorkSocket { get; }
+
+
+        /// <summary>
+        /// Flag indicating that this object is no longer usable, and trying to use it will throw an exception
+        /// </summary>
+        public bool IsDisposed { get; private set; }
+
+        #region Constructor
+
 
         public WorkingTCPConnection_Sync(Socket client, ILogger logger)
         {
             WorkSocket = client;
             _Logger = logger;
+
+            //Set the initial state to receiving header data
+            _ConnectionState = TCPConnectionState.ReceivingHeader;
         }
+
+        #endregion
+
+
+        #region Communcation methods
 
         /// <summary>
         /// Execute functions according to the internal state
@@ -33,7 +50,8 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             {
                 case TCPConnectionState.ReceivingHeader:
 
-                    //Try catch here is because the previous MessageHandler might have closed the socket already
+                    //Try catch here is because the previous MessageHandler might have closed the socket already.
+                    //flagging it as disposed.
 
                     try
                     {
@@ -115,7 +133,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             catch (Exception e)
             {
 
-                _Logger.Debug("Error receiving header data");
+                _Logger.Debug("Error receiving header data: ");
                 _Logger.Error(e.Message);
 
                 CloseConnectionGracefully();
@@ -161,7 +179,6 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             }
         }
 
-        #region Helper methods
 
         private void PrepareToReadNextHeader()
         {
@@ -187,6 +204,11 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             }
         }
 
+        #endregion
+
+        #region Helper methods
+
+
         private void PrepareBuffer(int size)
         {
             this._ReceiveBuffer = new byte[size];
@@ -194,12 +216,14 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
         private void CloseConnectionGracefully()
         {
-            _Logger.Info($"Connection with : {WorkSocket.RemoteEndPoint.ToString()} closing gracefully");
+            _Logger.Info($"Closing connection with : {WorkSocket.RemoteEndPoint.ToString()}");
 
             this.WorkSocket.Shutdown(SocketShutdown.Both);
             this.WorkSocket.Close();
 
-            this.NotifyConnectionClosed();
+
+            this.IsDisposed = true;
+
         }
 
         #endregion
@@ -207,7 +231,6 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
 
         public event Action<MessageObject> CompleteDataReceived;
-        public event Action<IWorkingTCPConnection> ConnectionClosedEvent;
 
 
         private void NotifyCompleteDataReceived(MessageObject Data)
@@ -216,13 +239,6 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
             this.CompleteDataReceived?.Invoke(Data);
 
-        }
-
-        private void NotifyConnectionClosed()
-        {
-            _Logger.Info("Connection closed");
-
-            ConnectionClosedEvent?.Invoke(this);
         }
     }
 }

@@ -2,7 +2,7 @@
 {
     internal enum TCPServerState
     {
-        Default,
+        Listening,
         AcceptConnectionRequestOperationStarted,
 
         ConnectionThresholdReached            

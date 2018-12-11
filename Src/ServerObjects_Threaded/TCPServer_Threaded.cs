@@ -14,7 +14,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
 
         private TcpListener tcplistener;
 
-        private TCPServerState _serverState = TCPServerState.Default;
+        private TCPServerState _serverState = TCPServerState.Listening;
 
         private List<IWorkingTCPConnection> TCPConnections = new List<IWorkingTCPConnection>();
 
@@ -102,7 +102,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
             {
                 //Reset server state to default
 
-                _serverState = TCPServerState.Default;
+                _serverState = TCPServerState.Listening;
             }
 
             await newConn.StartListen();
@@ -115,7 +115,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
         {
             if (TCPConnections.Contains(connection))
             {
-                connection.ConnectionClosedEvent -= this.OnConnectionClosed;
+                //connection.ConnectionClosedEvent -= this.OnConnectionClosed;
 
                 TCPConnections.Remove(connection);
 
@@ -124,7 +124,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
 
             if (TCPConnections.Count < MaxConnectionsAllowed)
             {
-                _serverState = TCPServerState.Default;
+                _serverState = TCPServerState.Listening;
             }
         }
     }

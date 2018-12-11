@@ -21,6 +21,8 @@ namespace TcpServerBaseLibrary.ServerObjects_Threaded
 
         public Socket WorkSocket { get; set; }
 
+        public bool IsDisposed => throw new NotImplementedException();
+
         private ILogger _Logger;
 
         private TCPConnectionState _ConnectionState;
