@@ -10,9 +10,9 @@ using System.Net;
 using System.Threading.Tasks;
 using System.Threading;
 
-namespace ServerBaseLibraryXUnitTest
+namespace TcpServerBaseLibrary.Tests
 {
-    public class TcpServerTest
+    public class TcpServerSyncTest
     {
 
         [Fact]
@@ -24,7 +24,7 @@ namespace ServerBaseLibraryXUnitTest
             Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             //Create server object
-            TCPServer_Sync server = new TCPServer_Sync(new EmptyLogger(), 8585, new Dictionary<int, IMessageManager>());
+            TCPServer_Sync server = new TCPServer_Sync(new DummyLogger(), 8585, new Dictionary<int, IMessageManager>(), 1);
 
 
             //Start server
@@ -41,13 +41,55 @@ namespace ServerBaseLibraryXUnitTest
         }
 
         [Fact]
+        public void ShouldReturnAcknowledgedHeader()
+        {
+
+            //Arrange
+
+            //Create ClientSocket
+            Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            //Create server object
+            TCPServer_Sync server = new TCPServer_Sync(new DummyLogger(), 8181, GetEmptyMessageHandler(), 1);
+
+            //Start server
+            Task.Run(() => server.Start());
+
+
+            //Act
+
+            //Create testdata
+            string teststring = "TestString";
+            byte[] testmsgdata = Encoding.ASCII.GetBytes(teststring);
+            var expected = new ApplicationProtocolHeader(testmsgdata.Length, 0);
+
+            //Connect to server
+            client.Connect(new IPEndPoint(IPAddress.Loopback, 8181));
+
+
+            //Send messageheader
+            client.Send(expected.WrapHeaderData());
+
+            byte[] headerbuffer = new byte[8];
+
+            //Receive ACK
+            client.Receive(headerbuffer);
+
+            var actual = new ApplicationProtocolHeader(headerbuffer);
+
+
+            Assert.Equal(expected, actual);
+
+        }
+
+        [Fact]
         public void ShouldHandleSentString_Test()
         {
 
             //Arrange
 
             //Create message handlers
-            var stringhandler = new TestStringHandler();
+            var stringhandler = new DummyStringHandler();
 
             var handlers = new Dictionary<int, IMessageManager>
             {
@@ -59,7 +101,7 @@ namespace ServerBaseLibraryXUnitTest
 
 
             //Create server object (Pass in handlers)
-            TCPServer_Sync server = new TCPServer_Sync(new EmptyLogger(), 8181, handlers);
+            TCPServer_Sync server = new TCPServer_Sync(new DummyLogger(), 8181, handlers, 1);
 
 
 
@@ -113,12 +155,76 @@ namespace ServerBaseLibraryXUnitTest
 
         }
 
+        [Fact]
+        public void ShouldShutdownConnectionIfSentMessageSentWithNoHandler()
+        {
+
+            //Arrange
+
+            //Create testdata
+            string teststring = "StringButNoStringMessageHandler";
+            byte[] testmsgdata = Encoding.ASCII.GetBytes(teststring);
+            var clientheader = new ApplicationProtocolHeader(testmsgdata.Length, 0);
+
+            //Create ClientSocket
+            Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+
+            //Create server object
+            TCPServer_Sync server = new TCPServer_Sync(new DummyLogger(), 6868, GetEmptyMessageHandler(), 1);
+
+            ////Act
+            
+            //Start server
+            Task.Run(() => server.Start());
+
+            //Connect to server
+            client.Connect(new IPEndPoint(IPAddress.Loopback, 6868));
+
+            SendDataWithNoMessageHandler();
+
+            byte[] by = new byte[8];
+
+            client.ReceiveTimeout = 1000;
+
+
+            int receivedbytes = -1;
+
+            try
+            {
+                receivedbytes = client.Receive(by);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+
+            //Receive() usually completes immidietly and returns 0 if 
+            //the remote site has close the connection
+            Assert.True(receivedbytes == 0);
+
+
+            void SendDataWithNoMessageHandler()
+            {
+                //Send messageheader
+                client.Send(clientheader.WrapHeaderData());
+
+                byte[] headerbuffer = new byte[8];
+
+                //Receive ACK
+                client.Receive(headerbuffer);
+
+                var returnedheader = new ApplicationProtocolHeader(headerbuffer);
+
+                if (clientheader.Equals(returnedheader))
+                {
+                    client.Send(testmsgdata);
+                }
+            }
+        }
+
 
         [Theory]
         [InlineData(1)]
-        [InlineData(2)]
-        [InlineData(3)]
-        [InlineData(4)]
         [InlineData(10)]
         public void ShouldRejectConnectionOverAllowedThresholdTheory(int maxallowed)
         {
@@ -138,7 +244,7 @@ namespace ServerBaseLibraryXUnitTest
 
 
             //Create server object
-            TCPServer_Sync server = new TCPServer_Sync(new EmptyLogger(), 8989, new Dictionary<int, IMessageManager>(), maxallowed);
+            TCPServer_Sync server = new TCPServer_Sync(new DummyLogger(), 8989, new Dictionary<int, IMessageManager>(), maxallowed);
 
 
             //Act
@@ -199,7 +305,7 @@ namespace ServerBaseLibraryXUnitTest
             //Act
 
             //Assert
-            Assert.Throws<ArgumentException>(() => new TCPServer_Sync(new EmptyLogger(), 9494, new Dictionary<int, IMessageManager>(), maxallowed));
+            Assert.Throws<ArgumentException>(() => new TCPServer_Sync(new DummyLogger(), 9494, new Dictionary<int, IMessageManager>(), maxallowed));
         }
 
 
@@ -244,30 +350,17 @@ namespace ServerBaseLibraryXUnitTest
 
 
 
+        private Dictionary<int, IMessageManager> GetEmptyMessageHandler()
+        {
+            return new Dictionary<int, IMessageManager>();
+        }
+
         #endregion
 
 
         #region Dummy objects
 
 
-        public class TestStringHandler : IMessageManager
-        {
-            public string HandledString;
-
-            public void HandleMessage(MessageObject msgobj)
-            {
-                HandledString = Encoding.ASCII.GetString(msgobj.CompleteData);
-            }
-        }
-
-        public class EmptyLogger : ILogger
-        {
-            public void Debug(string message) { }
-
-            public void Error(string message) { }
-
-            public void Info(string message) { }
-        }
 
         #endregion
     }

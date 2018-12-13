@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 
 namespace TcpServerBaseLibrary.ServerObjects_Sync
@@ -25,7 +26,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
         #region Constructor
 
 
-        public WorkingTCPConnection_Sync(Socket client, ILogger logger)
+        internal WorkingTCPConnection_Sync(Socket client, ILogger logger)
         {
             WorkSocket = client;
             _Logger = logger;
@@ -60,7 +61,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                             ReceiveHeaderData();
                         }
                     }
-                    catch (Exception)
+                    catch (ObjectDisposedException)
                     {
                         CloseConnectionGracefully();
                         //throw;
@@ -78,7 +79,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                             ListenForMessage();
                         }
                     }
-                    catch (Exception)
+                    catch (ObjectDisposedException)
                     {
                         CloseConnectionGracefully();
                         //throw;
@@ -137,10 +138,8 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                 _Logger.Error(e.Message);
 
                 CloseConnectionGracefully();
-
             }
         }
-
 
         private void ListenForMessage()
         {
@@ -161,14 +160,6 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                     _BytesRead += this.WorkSocket.Receive(this._ReceiveBuffer, _BytesRead, _ReceiveBuffer.Length - _BytesRead, SocketFlags.None);
                 }
 
-                MessageObject dataobj = new MessageObject(this.WorkSocket, header, _ReceiveBuffer);
-
-                //Pass dataobject to whoever listens for it
-                NotifyCompleteDataReceived(dataobj);
-
-                PrepareToReadNextHeader();
-
-                return;
             }
             catch (Exception e)
             {
@@ -176,9 +167,30 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                 _Logger.Error(e.Message);
 
                 CloseConnectionGracefully();
+                return;
             }
-        }
 
+            MessageObject dataobj = new MessageObject(this.WorkSocket, header, _ReceiveBuffer);
+
+            //Pass dataobject to whoever listens for it
+            //TODO: This may throw if no handler for that message is present
+
+
+            try
+            {
+                NotifyCompleteDataReceived(dataobj);
+
+            }
+            catch (KeyNotFoundException)
+            {
+                _Logger.Error("No handler for specified messagetype. Shutting down connection");
+
+                CloseConnectionGracefully();
+                return;
+            }
+
+            PrepareToReadNextHeader();
+        }
 
         private void PrepareToReadNextHeader()
         {
@@ -199,8 +211,8 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             }
             catch (Exception)
             {
-
-                throw;
+                _Logger.Error("Error sending header acknowledgment");
+                CloseConnectionGracefully();
             }
         }
 
@@ -223,7 +235,6 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
 
             this.IsDisposed = true;
-
         }
 
         #endregion

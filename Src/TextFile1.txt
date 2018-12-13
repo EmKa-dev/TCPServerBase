@@ -58,9 +58,6 @@ Send rest of the message
 
 Max message : 
 
-Port number = 6555
-
-
 ---------------------------------------
 Advice on TCP programming
 
@@ -87,3 +84,12 @@ A: Read until buffer is clear, discard data.
 
 What happens when an expected message never arrives?
 A: Time-out.
+
+If the client sends a header that does not have a attached handler 
+(does not exist in the dictionary of messagemanager)
+
+Option 1:
+Shut down the connection <--
+
+Option 2:
+Respond with a header with negative values

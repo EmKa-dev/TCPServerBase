@@ -33,8 +33,8 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
         /// <param name="logger"></param>
         /// <param name="port"></param>
         /// <param name="parsers">Message managers specified for each message type</param>
-        /// <param name="allowed">Max connections allow, default is 3</param>
-        public TCPServer_Sync(ILogger logger, int port, Dictionary<int, IMessageManager> parsers, int allowed = 3)
+        /// <param name="allowed">Max connections allowed</param>
+        public TCPServer_Sync(ILogger logger, int port, Dictionary<int, IMessageManager> parsers, int allowed)
         {
 
             if (allowed < 1)
@@ -48,8 +48,6 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             _Listeningport = port;
             _Parsers = parsers;
             _MaxConnectionsAllowed = allowed;
-
-
         }
 
 
@@ -103,7 +101,14 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                 //Loops through available connections and let them run their methods according to their state
                 foreach (var connection in TCPConnections)
                 {
-                    connection.ExecuteState(100);
+                    try
+                    {
+                        connection.ExecuteState(100);
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
                 }
             }
         }
@@ -128,7 +133,11 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             //Register eventhandlers
             newconn.CompleteDataReceived += OnCompleteDataReceived;
 
+            CheckAndChangeStateAgainstConnectionCount();
+        }
 
+        private void CheckAndChangeStateAgainstConnectionCount()
+        {
             if (TCPConnections.Count >= _MaxConnectionsAllowed)
             {
                 _serverState = TCPServerState.ConnectionThresholdReached;
@@ -139,8 +148,20 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                 tcplistener.Stop();
                 return;
             }
-        }
 
+            if (TCPConnections.Count < _MaxConnectionsAllowed)
+            {
+                if (_serverState != TCPServerState.Listening)
+                {
+
+                    _serverState = TCPServerState.Listening;
+
+                    _Logger.Debug("Starting listener again");
+                    tcplistener.Start();
+                    return;
+                }
+            }
+        }
 
         private void RemoveClosedConnections(List<IWorkingTCPConnection> list)
         {
@@ -152,25 +173,19 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                 _Logger.Debug("Connection removed from list");
             }
 
-
-            if (TCPConnections.Count < _MaxConnectionsAllowed)
-            {
-                //Reset server state to default
-
-                if (_serverState != TCPServerState.Listening)
-                {
-
-                    _serverState = TCPServerState.Listening;
-
-                    _Logger.Debug("Starting listener again");
-                    tcplistener.Start();
-                }
-            }
+            CheckAndChangeStateAgainstConnectionCount();
         }
 
         private void OnCompleteDataReceived(MessageObject obj)
         {
-            _Parsers[obj.MessageHeader.MessageTypeIdentifier].HandleMessage(obj);
+            try
+            {
+                _Parsers[obj.MessageHeader.MessageTypeIdentifier].HandleMessage(obj);
+            }
+            catch (KeyNotFoundException)
+            {
+                throw;
+            }
         }
     }
 }
