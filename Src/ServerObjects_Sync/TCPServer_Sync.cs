@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -8,7 +9,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 {
     public class TCPServer_Sync : ITCPServer
     {
-        private int _MaxConnectionsAllowed;
+        private readonly int _MaxConnectionsAllowed;
 
         private readonly int _Listeningport;
 
@@ -35,10 +36,20 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
         /// <param name="allowed">Max connections allow, default is 3</param>
         public TCPServer_Sync(ILogger logger, int port, Dictionary<int, IMessageManager> parsers, int allowed = 3)
         {
+
+            if (allowed < 1)
+            {
+                throw new ArgumentException("Max allowed connections cannot be 0", nameof(allowed));
+
+                //_serverState = TCPServerState.ConnectionThresholdReached;
+            }
+
             _Logger = logger;
             _Listeningport = port;
             _Parsers = parsers;
             _MaxConnectionsAllowed = allowed;
+
+
         }
 
 
@@ -146,16 +157,14 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             {
                 //Reset server state to default
 
-                if (_serverState == TCPServerState.Listening)
+                if (_serverState != TCPServerState.Listening)
                 {
-                    return;
+
+                    _serverState = TCPServerState.Listening;
+
+                    _Logger.Debug("Starting listener again");
+                    tcplistener.Start();
                 }
-
-
-                _serverState = TCPServerState.Listening;
-
-                _Logger.Debug("Starting listener again");
-                tcplistener.Start();
             }
         }
 

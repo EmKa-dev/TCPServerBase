@@ -113,71 +113,28 @@ namespace ServerBaseLibraryXUnitTest
 
         }
 
-        [Fact]
-        public void ShouldRejectConnectionOverAllowedThreshold()
-        {
-            //Arrange
-
-            //Create ClientSocket
-            List<Socket> sockets = new List<Socket>
-            {
-                new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp),
-                new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp),
-                new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp),
-                new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp),
-            };
-
-
-            //Create server object
-            TCPServer_Sync server = new TCPServer_Sync(new EmptyLogger(), 8585, new Dictionary<int, IMessageManager>());
-
-
-            //Act
-
-            //Start server
-            Task.Run(() => server.Start());
-
-            //Connect to server
-            foreach (var client in sockets)
-            {
-                try
-                {
-                    //Throw in a wait because the sockets need time to make the connections
-                    Thread.Sleep(100);
-                    client.Connect(new IPEndPoint(IPAddress.Loopback, 8585));
-                }
-                catch (Exception)
-                {
-                    continue;
-                    //throw;
-                }
-            }
-
-
-
-            //Assert
-            bool poll = sockets[3].Poll(300000, SelectMode.SelectWrite);
-
-            Assert.False(poll);
-        }
-
 
         [Theory]
         [InlineData(1)]
         [InlineData(2)]
         [InlineData(3)]
         [InlineData(4)]
+        [InlineData(10)]
         public void ShouldRejectConnectionOverAllowedThresholdTheory(int maxallowed)
         {
             //Arrange
 
+            SocketError expected = SocketError.ConnectionRefused;
+
             //Create ClientSockets
             List<Socket> sockets = new List<Socket>();
 
-            for (int i = 0; i < maxallowed+1; i++)
+            for (int i = 0; i < maxallowed; i++)
             {
                 sockets.Add(new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp));
             }
+
+            Socket failSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
 
             //Create server object
@@ -189,29 +146,99 @@ namespace ServerBaseLibraryXUnitTest
             //Start server
             Task.Run(() => server.Start());
 
-            //Connect to server
+            //Fill available server slots
             foreach (var client in sockets)
             {
                 try
                 {
                     //Throw in a wait because the sockets need time to make the connections
-                    Thread.Sleep(100);
                     client.Connect(new IPEndPoint(IPAddress.Loopback, 8989));
+                    Thread.Sleep(50);
                 }
                 catch (Exception)
                 {
-                    continue;
-                    //throw;
+                    throw;
                 }
+            }
+
+            //Connect with the socket we expect to fail
+
+            // 0 = SocketError.Sucess
+            SocketError actual = 0;
+
+            try
+            {
+                failSocket.Connect(IPAddress.Loopback, 8989);
+            }
+            catch (SocketException e)
+            {
+                actual = e.SocketErrorCode;
             }
 
 
 
             //Assert
-            bool actual = sockets[sockets.Count-1].Poll(300000, SelectMode.SelectWrite);
 
-            Assert.False(actual);
+            Assert.Equal(expected, actual);
+
+            //Notes:
+            //So it appears that the actual exception type thrown when the connection is refused is a 
+            //''System.Net.Internals.SocketExceptionFactory + ExtendedSocketException''
+            //which, in a try-catch, somehow translates to a ordinary SocketException,
+            //But in ''Assert.Throws<SocketException>..'', it does not.
         }
+
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void ShouldThrowArgumentExceptionIfAllowedIsZeroOrLess(int maxallowed)
+        {
+            //Arrange
+
+            //Act
+
+            //Assert
+            Assert.Throws<ArgumentException>(() => new TCPServer_Sync(new EmptyLogger(), 9494, new Dictionary<int, IMessageManager>(), maxallowed));
+        }
+
+
+        #region Tests to be developed
+
+        //[Fact]
+        //public void ShouldRejectExtremeAmountOfSuccessiveConnectionAttempts()
+        //{
+        //    //Server which handles extreme amounts of connections
+        //    var server = new TCPServer_Sync(new EmptyLogger(), 9898, new Dictionary<int, IMessageManager>(), int.MaxValue);
+
+
+        //    SocketError actual = 0;
+
+        //    for (int i = 0; i < 80; i++)
+        //    {
+        //        try
+        //        {
+        //            new Socket(SocketType.Stream, ProtocolType.Tcp).Connect(IPAddress.Loopback, 9898);
+
+        //        }
+        //        catch (SocketException e)
+        //        {
+        //            actual = e.SocketErrorCode;
+        //            continue;
+        //            //throw;
+        //        }
+        //    }
+
+        //    SocketError expected = SocketError.ConnectionRefused;
+
+        //    Assert.Equal(expected, actual);
+
+
+        //}
+
+        #endregion
+
+
 
         #region Setup methods
 
