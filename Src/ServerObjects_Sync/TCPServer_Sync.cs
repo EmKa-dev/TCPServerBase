@@ -39,9 +39,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
             if (allowed < 1)
             {
-                throw new ArgumentException("Max allowed connections cannot be 0", nameof(allowed));
-
-                //_serverState = TCPServerState.ConnectionThresholdReached;
+                throw new ArgumentException("Max allowed connections must be 1 or more");
             }
 
             _Logger = logger;
@@ -168,9 +166,9 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
             foreach (var item in list)
             {
-
+                item.CompleteDataReceived -= this.OnCompleteDataReceived;
                 TCPConnections.Remove(item);
-                _Logger.Debug("Connection removed from list");
+                _Logger.Debug("Connection removed");
             }
 
             CheckAndChangeStateAgainstConnectionCount();
