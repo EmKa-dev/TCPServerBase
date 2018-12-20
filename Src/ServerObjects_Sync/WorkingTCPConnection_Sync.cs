@@ -76,7 +76,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                     {
                         if (WorkSocket.Poll(microseconds, SelectMode.SelectRead))
                         {
-                            ListenForMessage();
+                            ReceiveMessageData();
                         }
                     }
                     catch (ObjectDisposedException)
@@ -141,7 +141,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             }
         }
 
-        private void ListenForMessage()
+        private void ReceiveMessageData()
         {
             ApplicationProtocolHeader header = new ApplicationProtocolHeader(_ProtocolPrefixBuffer);
 
@@ -194,10 +194,8 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
         private void PrepareToReadNextHeader()
         {
-            //Reset bytes read as we prepare to read the next header
             this._BytesRead = 0;
             _ProtocolPrefixBuffer = new byte[8];
-
             _ConnectionState = TCPConnectionState.ReceivingHeader;
         }
 

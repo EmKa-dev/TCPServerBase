@@ -1,1 +1,1 @@
-A base library for creating tcp-based server apps
+A base library for creating simple tcp-based server apps.

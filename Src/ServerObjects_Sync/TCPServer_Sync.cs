@@ -13,7 +13,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
         private readonly int _Listeningport;
 
-        private TcpListener tcplistener;
+        private TcpListener _tcplistener;
 
         private TCPServerState _serverState = TCPServerState.Listening;
 
@@ -64,10 +64,10 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
             
             //TODO: Make mthod for seraching for IP
-            tcplistener = new TcpListener(IPAddress.Any, _Listeningport);
+            _tcplistener = new TcpListener(IPAddress.Any, _Listeningport);
 
             //Starts the listener
-            this.tcplistener.Start();
+            this._tcplistener.Start();
 
 
             //Main loop to keep the server going
@@ -77,10 +77,10 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                 if (_serverState != TCPServerState.ConnectionThresholdReached)
                 {
 
-                    if (tcplistener.Pending())
+                    if (_tcplistener.Pending())
                     {
 
-                        var newconnection = this.tcplistener.AcceptTcpClient();
+                        var newconnection = this._tcplistener.AcceptTcpClient();
 
                         SetupNewConnection(newconnection);
                     }
@@ -88,7 +88,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
 
 
 
-                //Check for closed down connections before using it
+                //Check for closed down connections before we try to use it
                 if (TCPConnections.Any(x => x.IsDisposed == true))
                 {
                     //Remove any closed connections from TCPConnections              
@@ -99,14 +99,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                 //Loops through available connections and let them run their methods according to their state
                 foreach (var connection in TCPConnections)
                 {
-                    try
-                    {
-                        connection.ExecuteState(100);
-                    }
-                    catch (Exception)
-                    {
-                        continue;
-                    }
+                    connection.ExecuteState(100);
                 }
             }
         }
@@ -143,7 +136,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                 _Logger.Debug("Connection threshold reached");
                 _Logger.Debug("Stopping listener");
 
-                tcplistener.Stop();
+                _tcplistener.Stop();
                 return;
             }
 
@@ -155,7 +148,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
                     _serverState = TCPServerState.Listening;
 
                     _Logger.Debug("Starting listener again");
-                    tcplistener.Start();
+                    _tcplistener.Start();
                     return;
                 }
             }
