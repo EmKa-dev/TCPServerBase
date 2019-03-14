@@ -64,14 +64,12 @@ Advice on TCP programming
 To prevent deadlock situation, where a socket buffer reads data slower than it receives..
 Always keep a read operation running
 
-Data is read into a buffer, and then processed/scanned
+Data should be read into a buffer, and then processed/scanned
 
 Send header without the message (only lenght-prefix first), and then send rest of message when lenght acknowledged
 
 Pros:
 First data transfer is minimal, since it doesn't also contain the whole message.
-
-
 Cons:
 
 
