@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using TcpServerBaseLibrary.Interfaces;
+using TcpServerBaseLibrary.Interface;
 
-namespace TcpServerBaseLibrary.ServerObjects_Sync
+namespace TcpServerBaseLibrary.Core
 {
-    public class TCPServer_Sync : ITCPServer
+    public class TCPServer : ITCPServer
     {
         private readonly int _MaxConnectionsAllowed;
 
@@ -34,7 +34,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
         /// <param name="port"></param>
         /// <param name="parsers">Message managers specified for each message type</param>
         /// <param name="allowed">Max connections allowed</param>
-        public TCPServer_Sync(ILogger logger, int port, Dictionary<int, IMessageManager> parsers, int allowed)
+        public TCPServer(ILogger logger, int port, Dictionary<int, IMessageManager> parsers, int allowed)
         {
 
             if (allowed < 1)
@@ -113,7 +113,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
         private void SetupNewConnection(TcpClient newconnection)
         {
 
-            WorkingTCPConnection_Sync newconn = new WorkingTCPConnection_Sync(newconnection.Client, _Logger);
+            WorkingTCPConnection newconn = new WorkingTCPConnection(newconnection.Client, _Logger);
 
             _Logger.Info($"Connection made with {newconn.WorkSocket.RemoteEndPoint.ToString()}");
 

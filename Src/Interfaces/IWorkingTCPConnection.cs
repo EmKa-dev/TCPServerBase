@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Net.Sockets;
+using TcpServerBaseLibrary.Core;
 
-namespace TcpServerBaseLibrary
+namespace TcpServerBaseLibrary.Interface
 {
     internal interface IWorkingTCPConnection
     {

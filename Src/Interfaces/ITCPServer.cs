@@ -1,4 +1,4 @@
-﻿namespace TcpServerBaseLibrary
+﻿namespace TcpServerBaseLibrary.Interface
 {
     internal interface ITCPServer
     {

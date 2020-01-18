@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using Xunit;
-using TcpServerBaseLibrary;
-using TcpServerBaseLibrary.Interfaces;
 using System.Net.Sockets;
-using TcpServerBaseLibrary.ServerObjects_Sync;
 using System.Net;
 using System.Threading.Tasks;
 using System.Threading;
+using TcpServerBaseLibrary.Core;
+using TcpServerBaseLibrary.Interface;
 
 namespace TcpServerBaseLibrary.Tests
 {
@@ -24,7 +23,7 @@ namespace TcpServerBaseLibrary.Tests
             Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             //Create server object
-            TCPServer_Sync server = new TCPServer_Sync(new DummyLogger(), 8585, new Dictionary<int, IMessageManager>(), 1);
+            TCPServer server = new TCPServer(new DummyLogger(), 8585, new Dictionary<int, IMessageManager>(), 1);
 
 
             //Start server
@@ -50,7 +49,7 @@ namespace TcpServerBaseLibrary.Tests
             Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             //Create server object
-            TCPServer_Sync server = new TCPServer_Sync(new DummyLogger(), 8181, GetEmptyMessageHandler(), 1);
+            TCPServer server = new TCPServer(new DummyLogger(), 8181, GetEmptyMessageHandler(), 1);
 
             //Start server
             Task.Run(() => server.Start());
@@ -101,7 +100,7 @@ namespace TcpServerBaseLibrary.Tests
 
 
             //Create server object (Pass in handlers)
-            TCPServer_Sync server = new TCPServer_Sync(new DummyLogger(), 8181, handlers, 1);
+            TCPServer server = new TCPServer(new DummyLogger(), 8181, handlers, 1);
 
 
 
@@ -170,7 +169,7 @@ namespace TcpServerBaseLibrary.Tests
             Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             //Create server object
-            TCPServer_Sync server = new TCPServer_Sync(new DummyLogger(), 6868, GetEmptyMessageHandler(), 1);
+            TCPServer server = new TCPServer(new DummyLogger(), 6868, GetEmptyMessageHandler(), 1);
 
             ////Act
             
@@ -244,7 +243,7 @@ namespace TcpServerBaseLibrary.Tests
 
 
             //Create server object
-            TCPServer_Sync server = new TCPServer_Sync(new DummyLogger(), 8989, new Dictionary<int, IMessageManager>(), maxallowed);
+            TCPServer server = new TCPServer(new DummyLogger(), 8989, new Dictionary<int, IMessageManager>(), maxallowed);
 
 
             //Act
@@ -305,7 +304,7 @@ namespace TcpServerBaseLibrary.Tests
             //Act
 
             //Assert
-            Assert.Throws<ArgumentException>(() => new TCPServer_Sync(new DummyLogger(), 9494, new Dictionary<int, IMessageManager>(), maxallowed));
+            Assert.Throws<ArgumentException>(() => new TCPServer(new DummyLogger(), 9494, new Dictionary<int, IMessageManager>(), maxallowed));
         }
 
 
@@ -315,7 +314,7 @@ namespace TcpServerBaseLibrary.Tests
         //public void ShouldRejectExtremeAmountOfSuccessiveConnectionAttempts()
         //{
         //    //Server which handles extreme amounts of connections
-        //    var server = new TCPServer_Sync(new EmptyLogger(), 9898, new Dictionary<int, IMessageManager>(), int.MaxValue);
+        //    var server = new TCPServer(new EmptyLogger(), 9898, new Dictionary<int, IMessageManager>(), int.MaxValue);
 
 
         //    SocketError actual = 0;
@@ -344,23 +343,12 @@ namespace TcpServerBaseLibrary.Tests
 
         #endregion
 
-
-
         #region Setup methods
-
-
 
         private Dictionary<int, IMessageManager> GetEmptyMessageHandler()
         {
             return new Dictionary<int, IMessageManager>();
         }
-
-        #endregion
-
-
-        #region Dummy objects
-
-
 
         #endregion
     }

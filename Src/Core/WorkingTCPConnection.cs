@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using TcpServerBaseLibrary.Interface;
 
-namespace TcpServerBaseLibrary.ServerObjects_Sync
+namespace TcpServerBaseLibrary.Core
 {
-    internal class WorkingTCPConnection_Sync : IWorkingTCPConnection
+    internal class WorkingTCPConnection : IWorkingTCPConnection
     {
         private byte[] _ReceiveBuffer;
         private byte[] _ProtocolPrefixBuffer = new byte[8];
@@ -26,7 +27,7 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
         #region Constructor
 
 
-        internal WorkingTCPConnection_Sync(Socket client, ILogger logger)
+        internal WorkingTCPConnection(Socket client, ILogger logger)
         {
             WorkSocket = client;
             _Logger = logger;
@@ -36,7 +37,6 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
         }
 
         #endregion
-
 
         #region Communcation methods
 
@@ -247,7 +247,6 @@ namespace TcpServerBaseLibrary.ServerObjects_Sync
             _Logger.Debug("Complete message received");
 
             this.CompleteDataReceived?.Invoke(Data);
-
         }
     }
 }

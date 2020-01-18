@@ -1,6 +1,6 @@
 ﻿using System.Net.Sockets;
 
-namespace TcpServerBaseLibrary
+namespace TcpServerBaseLibrary.Core
 {
     public class MessageObject
     {

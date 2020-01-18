@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace TcpServerBaseLibrary
+namespace TcpServerBaseLibrary.Core
 {
-
     public struct ApplicationProtocolHeader
     {
         public int Lenght;

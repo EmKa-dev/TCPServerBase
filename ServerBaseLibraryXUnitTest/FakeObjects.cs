@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TcpServerBaseLibrary;
-using TcpServerBaseLibrary.Interfaces;
+﻿using System.Text;
+using TcpServerBaseLibrary.Core;
+using TcpServerBaseLibrary.Interface;
 
 namespace TcpServerBaseLibrary.Tests
 {
-
-
     internal class DummyStringHandler : IMessageManager
     {
         public string HandledString;

@@ -19,12 +19,7 @@ Consumer responsibilities:
 Provide server object with expected messagetypes and respective parsers
 
 
-
-
-
 If the consumer of this library wants to add its own messagetype and parser?
-
-
 
 App code specification
 
@@ -38,13 +33,11 @@ Functions:
 *Send response to client (if requested) (Responsibility 5)
 
 
-
 Application protocol specification
 
 All messages are prefixed with a 8 bit header, that on the receiving side is 
 passed into the shared struct to read lenght and type of incoming data-message, and returning the same data 
 to tell the other side to start sending rest of the message.
-
 
 Sending side:
 
@@ -55,7 +48,6 @@ Wait for acknowledgment from receiving side, the acknowledge message is essentia
 Send rest of the message
 
 
-
 Max message : 
 
 ---------------------------------------
@@ -64,7 +56,7 @@ Advice on TCP programming
 To prevent deadlock situation, where a socket buffer reads data slower than it receives..
 Always keep a read operation running
 
-Data should be read into a buffer, and then processed/scanned
+Data should be read into a buffer first before processed.
 
 Send header without the message (only lenght-prefix first), and then send rest of message when lenght acknowledged
 

@@ -1,8 +1,7 @@
-﻿namespace TcpServerBaseLibrary
+﻿namespace TcpServerBaseLibrary.Interface
 {
     public interface ILogger
     {
-
         void Info(string message);
 
         void Debug(string message);
