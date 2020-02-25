@@ -11,13 +11,11 @@ namespace TcpServerBaseLibrary.Core
         private byte[] _ProtocolPrefixBuffer = new byte[8];
         private int _BytesRead;
 
-        //Dependency objects
         private ILogger _Logger;
 
         internal TCPConnectionState _ConnectionState { get; private set; }
 
         public Socket WorkSocket { get; }
-
 
         /// <summary>
         /// Flag indicating that this object is no longer usable, and trying to use it will throw an exception

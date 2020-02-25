@@ -175,6 +175,7 @@ namespace TcpServerBaseLibrary.Core
             }
             catch (KeyNotFoundException)
             {
+                _Logger.Error("No handler for this messagetype exists");
                 throw;
             }
         }
