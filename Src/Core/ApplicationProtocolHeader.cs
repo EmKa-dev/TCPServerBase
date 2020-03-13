@@ -1,6 +1,6 @@
 ﻿ using System;
 
-namespace TcpServerBaseLibrary.Core
+namespace TcpServerBaseLibrary
 {
     public struct ApplicationProtocolHeader
     {

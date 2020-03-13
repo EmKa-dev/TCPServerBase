@@ -1,6 +1,4 @@
-﻿using TcpServerBaseLibrary.Core;
-
-namespace TcpServerBaseLibrary.Interface
+﻿namespace TcpServerBaseLibrary.Interface
 {
     public interface IMessageManager
     {

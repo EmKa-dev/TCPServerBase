@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using TcpServerBaseLibrary.Interface;
 
-namespace TcpServerBaseLibrary.Core
+namespace TcpServerBaseLibrary
 {
     internal class WorkingTCPConnection : IWorkingTCPConnection
     {

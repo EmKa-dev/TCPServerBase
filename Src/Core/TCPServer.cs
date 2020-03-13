@@ -5,7 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using TcpServerBaseLibrary.Interface;
 
-namespace TcpServerBaseLibrary.Core
+namespace TcpServerBaseLibrary
 {
     public class TCPServer : ITCPServer
     {

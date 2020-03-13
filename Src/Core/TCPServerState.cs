@@ -1,10 +1,9 @@
-﻿namespace TcpServerBaseLibrary.Core
+﻿namespace TcpServerBaseLibrary
 {
     internal enum TCPServerState
     {
         Listening,
         AcceptConnectionRequestOperationStarted,
-
         ConnectionThresholdReached            
     }
 }

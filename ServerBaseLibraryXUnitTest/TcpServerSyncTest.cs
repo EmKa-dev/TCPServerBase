@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Net;
 using System.Threading.Tasks;
 using System.Threading;
-using TcpServerBaseLibrary.Core;
+using TcpServerBaseLibrary;
 using TcpServerBaseLibrary.Interface;
 
 namespace TcpServerBaseLibrary.Tests

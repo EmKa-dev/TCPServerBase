@@ -1,4 +1,4 @@
-﻿namespace TcpServerBaseLibrary.Core
+﻿namespace TcpServerBaseLibrary
 {
     internal enum TCPConnectionState
     {

@@ -1,5 +1,5 @@
 ﻿using System.Text;
-using TcpServerBaseLibrary.Core;
+using TcpServerBaseLibrary;
 using TcpServerBaseLibrary.Interface;
 
 namespace TcpServerBaseLibrary.Tests
