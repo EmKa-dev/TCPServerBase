@@ -1,1 +1,3 @@
+Refactor to use asynchronous operations. In current state, with only synchronous operations and frequent polling, uses ALOT of CPU-resources.
+
 Sanity check for (too) large packages.
